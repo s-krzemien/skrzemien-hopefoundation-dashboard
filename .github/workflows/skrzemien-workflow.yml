@@ -1,13 +1,55 @@
-name: Test Workflow
+name: Auto Clean Uploaded Data
 
 on:
   push:
     branches:
       - main
+    paths:
+      - '**/*.csv'
+      - '**/*.xlsx'
+
+permissions:
+  contents: write
 
 jobs:
-  test-job:
+  clean-up-job:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Say hi
-        run: echo "It works!"
+      - name: Pull repository files
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install required packages
+        run: |
+          pip install pandas numpy requests openpyxl
+
+      - name: Identify changed data files
+        id: find_files
+        run: |
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\.csv$|\.xlsx$' || true)
+          echo "FILES=$FILES" >> $GITHUB_ENV
+          echo "Changed files: $FILES"
+
+      - name: Run data cleaning script for each file
+        if: env.FILES != ''
+        run: |
+          for FILE in $FILES; do
+            echo "Running cleaner on: $FILE"
+            python datacleaning.py "$FILE"
+          done
+
+      - name: Save cleaned output
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add *_CLEANED.csv
+          git commit -m "Cleaned files update"
+          git push
+        continue-on-error: true
