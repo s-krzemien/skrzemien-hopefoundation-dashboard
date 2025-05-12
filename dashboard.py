@@ -272,7 +272,7 @@ elif page == "Impact & Progress Summary":
         summary_data['grant_month'] = summary_data['grant_req_date'].dt.to_period('M')
         monthly_requests = summary_data.dropna(subset=['grant_month']).groupby('grant_month').size()
         monthly_requests.index = monthly_requests.index.to_timestamp()
-        monthly_requests.index.name = ' ' # removes 'grant_month' label from x-axis
+        monthly_requests.index.name = 'Time' # removes 'grant_month' label from x-axis
 
         fig = px.line(
             monthly_requests,
