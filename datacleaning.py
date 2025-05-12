@@ -224,31 +224,24 @@ def add_age_column(dob_column):
 def add_age_category_column(age_column):
     """
     Adds an 'age_category' column based on the 'age' column with these categories:
-    - Child: 0-12
-    - Teen: 13-19
+    - Child: 0-19
     - Young Adult: 20-35
-    - Adult: 36-50
-    - Middle-aged: 51-65
+    - Adult: 36-65
     - Senior: 66+
     """
     def categorize_age(age):
         if pd.isna(age):
             return "NA"
-        elif age <= 12:
-            return "Child"
         elif age <= 19:
-            return "Teen"
+            return "Child"
         elif age <= 35:
             return "Young Adult"
-        elif age <= 50:
-            return "Adult"
         elif age <= 65:
-            return "Middle-aged"
+            return "Adult"
         else:
             return "Senior"
     
     return age_column.apply(categorize_age)
-
 
 
 #cleaning marriage columm 
