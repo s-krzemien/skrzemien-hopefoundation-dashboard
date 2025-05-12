@@ -16,9 +16,40 @@ stdf = pd.concat(df_list, ignore_index=True)
 st.title("Hope Foundation Dashboard")
 
 # sidebar for navigation
-page = st.sidebar.radio("Select a Page", ["Applications Ready for Review", "Support Breakdown by Demographics", "Support Response Time", "Grant Utilization Overview", "Impact & Progress Summary"])
+page = st.sidebar.radio("Select a Page", ["Home Page", "Applications Ready for Review", "Support Breakdown by Demographics", "Support Response Time", "Grant Utilization Overview", "Impact & Progress Summary"])
 
-# 1. Applications ready for review page
+#Home page
+elif page == "Home Page":
+    st.title("Patient Assistance Grant Tracker")
+    st.markdown("---")
+
+    st.subheader("📌 About This Dashboard")
+    st.markdown("""
+    This dashboard was created to provide insights into the impact and performance of the Nebraska Cancer Specialists Hope Foundation's patient assistance grant program.
+
+    It allows users to:
+    - Monitor overall grant distribution and spending
+    - Track support trends over time
+    - Analyze patient reach and return support
+    - Identify areas of overspending and efficiency
+
+    The goal is to support decision-making and ensure funds are used effectively to help patients in need.
+    """)
+
+    st.subheader("🧭 How to Use")
+    st.markdown("""
+    Use the navigation sidebar to access:
+    - **Impact & Progress Summary**: Key metrics on grant funding, patient support, and outcomes
+    - **Trends Over Time**: Visualizations of funding patterns and patient engagement
+    - **Raw Data Review**: Explore the underlying data and filters
+    
+    For any questions or suggestions, please reach out to the project team.
+    """)
+
+    st.markdown("---")
+    st.caption("Dashboard created using Streamlit · Updated monthly")
+
+# Applications ready for review page
 if page == "Applications Ready for Review":
     ready_for_review = stdf[stdf['request_status'] == 'Pending']
 
