@@ -196,7 +196,7 @@ elif page == "Support Breakdown by Demographics":
 
     elif demographic_choice == "Age":
         st.markdown("""
-            **Legend for Household Income:**
+            **Legend for Age Categories:**
             
             - Child: 0-12
             - Teen: 13-19
@@ -206,7 +206,11 @@ elif page == "Support Breakdown by Demographics":
              - Senior: 66+
         """)
 
+        age_order = ["Child", "Teen", "Young Adult", "Adult", "Middle-aged", "Senior"]
+
         age_support = stdf.groupby('age_category')['amount'].sum()
+        age_support = age_support.reindex(age_order)  # reorder the index, before was like adult, child, senior etc didnt make sense
+
         st.write(age_support)
         st.bar_chart(age_support)
 
