@@ -429,7 +429,7 @@ def clean_income(income):
     try:
         income = float(income)
         
-        if income < 0 or income > 6000: #same as above just doing na for st dashboard for invalids
+        if income < 0 or income > 14000: #same as above just doing na for st dashboard for invalids
             return 'NA'
 
         if income < 3000:
