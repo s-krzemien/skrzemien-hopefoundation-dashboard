@@ -255,7 +255,7 @@ elif page == "Impact & Progress Summary":
 
     col3, col4 = st.columns(2)
     col3.metric("Total Approved Grants", len(approved_grants))
-    col4.metric("Unique Patients Served", len(total_patients))
+    col4.metric("Unique Patients Served", total_patients)
 
     if 'days_to_support' in summary_data.columns:
         avg_days = summary_data['days_to_support'].mean()
