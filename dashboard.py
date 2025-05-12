@@ -226,7 +226,7 @@ elif page == "Support Response Time":
 
 #4. Grant Utilization Page
 elif page == "Grant Utilization Overview":
-    st.header("Grant Utilization by Year")
+    st.header("Grant Utilization Overview")
 
     # filter patients with a positive remaining balance
     positive_balance = stdf[stdf['remaining_balance'] > 0]
