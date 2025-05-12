@@ -752,29 +752,21 @@ def clean_data(input_file, sheet_name=None):
     return df
 
 def main():
+    # check if input file is provided
     if len(sys.argv) < 2:
-        raise ValueError("No input file provided. Usage: python datacleaning.py <input_file>")
+        raise ValueError("No input file provided. Usage: python clean_data_script.py <input_file>")
 
-    input_file = os.path.abspath(sys.argv[1])  # Get absolute path
+    input_file = sys.argv[1]
 
+    # check if input file exists
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Input file '{input_file}' not found.")
 
-    # Set output file name
+    # determine output file
     output_file = os.path.splitext(input_file)[0] + "_CLEANED.csv"
+    sheet_name = "PA Log Sheet" if input_file.endswith(".xlsx") else None
 
-    # Determine file type and read accordingly
-    if input_file.endswith(".xlsx"):
-        try:
-            # Try to get the first sheet name automatically
-            xl = pd.ExcelFile(input_file)
-            sheet_name = xl.sheet_names[0]  # Take the first sheet
-            print(f"Detected sheet: {sheet_name}")
-        except Exception as e:
-            raise ValueError(f"Failed to read Excel sheet: {e}")
-    else:
-        sheet_name = None  # Not used for CSVs
-
+    # Print the input and output file paths
     print(f"Reading from: {input_file}")
     cleaned_df = clean_data(input_file, sheet_name=sheet_name)
 
