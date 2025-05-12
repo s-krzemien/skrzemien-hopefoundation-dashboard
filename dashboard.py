@@ -4,11 +4,11 @@ import pydeck as pdk
 import plotly.express as px
 import glob
 
-# find cleaned files (all cleaned CSV files follow the __CLEAD.csv pattern from datacleaning.py)
+# find clean files (all clean CSV files follow the __CLEAN.csv pattern from datacleaning.py)
 clean_files = glob.glob("*_CLEAN.csv")
 print(f"Found cleaned files: {clean_files}")
 
-# combine all cleaned CSV files into a single dataframe
+# combine all clean CSV files into a single dataframe
 df_list = [pd.read_csv(f) for f in clean_files]
 stdf = pd.concat(df_list, ignore_index=True)
 
@@ -75,7 +75,7 @@ elif page == "Applications Ready for Review":
     st.write(f"Displaying applications with signature status '{signature_status}'")
     st.dataframe(ready_for_review)
 
-# 2. Support Breakdown by Demographic Page
+# Support Breakdown by Demographic Page
 elif page == "Support Breakdown by Demographics":
     st.header("Support Breakdown by Demographics")
     demographics = [
@@ -89,36 +89,43 @@ elif page == "Support Breakdown by Demographics":
     # filter & display data based on the selected demographic
     if demographic_choice == "Gender":
         # sum support by amount and _____ (in this case gender)
+        st.header("Support Breakdown by Gender")
         gender_support = stdf.groupby("gender")["amount"].sum()  
         st.write(gender_support)
         st.bar_chart(gender_support)
 
     elif demographic_choice == "Insurance Type":
+        st.header("Support Breakdown by Patient's Insurance Type")
         insurance_support = stdf.groupby("insurance_type")["amount"].sum()  
         st.write(insurance_support)
         st.bar_chart(insurance_support)
 
     elif demographic_choice == "Sexuality":
+        st.header("Support Breakdown by Sexuality")
         sexuality_support = stdf.groupby("sexual_orientation")["amount"].sum()  
         st.write(sexuality_support)
         st.bar_chart(sexuality_support)
 
     elif demographic_choice == "Race":
+        st.header("Support Breakdown by Race")
         racial_support = stdf.groupby("race")["amount"].sum()  
         st.write(racial_support)
         st.bar_chart(racial_support)
 
     elif demographic_choice == "Language Spoken":
+        st.header("Support Breakdown by Language Spoken")
         language_support = stdf.groupby("language")["amount"].sum()  
         st.write(language_support)
         st.bar_chart(language_support)
 
     elif demographic_choice == "Hispanic or Latino":
+        st.header("Support Breakdown by Ethnicity (Hispanic or Latino)")
         ethnicity_support = stdf.groupby("hispaniclatino")["amount"].sum()  
         st.write(ethnicity_support)
         st.bar_chart(ethnicity_support)
 
     elif demographic_choice == 'Location':
+        st.header("Support Breakdown by State")
         state_support = stdf.groupby("pt_state")["amount"].sum()
         st.write(state_support)
         st.bar_chart(state_support)
@@ -131,7 +138,7 @@ elif page == "Support Breakdown by Demographics":
             **Legend for Household Income:**
             
             - **High**: Represents households with a gross monthly income **greater than $7,000**.
-            - **Middle**: Represents households with a gross monthly income **between $3,000 - $7,000**.
+            - **Middle**: Represents households with a gross monthly income **between $3,000 and $7,000**.
             - **Low**: Represents households with a gross monthly income **less than $3,000**.
             
             This breakdown helps to analyze how support is distributed across different income levels.
@@ -142,7 +149,7 @@ elif page == "Support Breakdown by Demographics":
         st.bar_chart(income_support)
 
     elif demographic_choice == "Zip Code":
-        st.header("Support by Zip Code")
+        st.header("Support Breakdown by Zip Code")
 
         zip_code_support = stdf.groupby("pt_zip")["amount"].sum()
         st.write(zip_code_support)
@@ -162,7 +169,7 @@ elif page == "Support Breakdown by Demographics":
         map_data["lng"] = map_data["lng"].astype(float)
         map_data["amount"] = map_data["amount"].astype(float)
 
-        # create a pydeck map (full disclosure: i used chatgpt to figure this out and i know you had a great option for this but I already had begun working with this so i decided to just to commit to it)
+        # create a pydeck map (full disclosure: i used chatgpt for assistance bc this was completely new and i know you had a great option for this but I already had begun working with this so i decided to just to commit to it)
         deck = pdk.Deck(
             initial_view_state=pdk.ViewState(
                 latitude=map_data['lat'].mean(),
@@ -185,16 +192,19 @@ elif page == "Support Breakdown by Demographics":
 
 
     elif demographic_choice == "Marital Status":
+        st.header("Support Breakdown by Marital Status")
         marriage_support = stdf.groupby('marital_status')['amount'].sum()
         st.write(marriage_support)
         st.bar_chart(marriage_support)
 
     elif demographic_choice == "Household Size":
+        st.header("Support Breakdown by Household Size")
         householdsize_support = stdf.groupby('household_size')['amount'].sum()
         st.write(householdsize_support) 
         st.bar_chart(householdsize_support)
 
     elif demographic_choice == "Age":
+        st.header("Support Breakdown by Age")
         st.markdown("""
             **Legend for Age Categories:**
         
@@ -210,7 +220,7 @@ elif page == "Support Breakdown by Demographics":
         # group by age_category and calculate the sum of the amounts
         age_support = stdf.groupby('age_category')['amount'].sum()
 
-        # ensure the chart shows categories in the desired order
+        # ensure the chart shows categories in logical order
         age_support = age_support.reindex(age_order)
         st.write(age_support)
         st.bar_chart(age_support)
@@ -229,7 +239,7 @@ elif page == "Support Response Time":
 
     
 
-#4. Grant Utilization Page
+# Grant Utilization Page
 elif page == "Grant Utilization Overview":
     st.header("Grant Utilization Overview")
 
@@ -266,7 +276,7 @@ elif page == "Grant Utilization Overview":
     st.pyplot(fig)
 
 
-#5. Impact & Progress Summary 
+ # Impact & Progress Summary 
 elif page == "Impact & Progress Summary":
     st.header("Impact & Progress Summary (All Time)")
 
@@ -287,16 +297,16 @@ elif page == "Impact & Progress Summary":
     returning_patients = approved_grants['patient_id'].value_counts()
     num_returning_patients = (returning_patients > 1).sum()
 
-    # Calculate avg_days if the column exists
+    # calculate average days to support
     avg_days = summary_data['days_to_support'].mean() if 'days_to_support' in summary_data.columns else None
 
-    # Row 1
+    # row 1
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
     col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
     col3.metric("Total Approved Grants", len(approved_grants))
 
-    # Row 2
+    # row 2
     col4, col5, col6 = st.columns(3)
     col4.metric("Unique Patients Served", total_patients)
     col5.metric("Returning Patients Supported", num_returning_patients)
