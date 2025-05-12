@@ -42,8 +42,9 @@ jobs:
         if: env.FILES != ''
         run: |
           for FILE in $FILES; do
+            # Make sure to wrap $FILE in quotes in case it has spaces
             echo "Running cleaner on: $FILE"
-            python datacleaning.py "$FILE"
+            python datacleaning.py "$FILE"  # Wrap $FILE in quotes here
           done
 
       - name: Save cleaned output
