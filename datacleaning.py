@@ -140,7 +140,7 @@ def clean_state(state):
     # if it's already an abbreviation, make sure it's uppercase
     if state.upper() in state_abbreviation_map.values():
         return state.upper() 
-    # convert full name to abbreviation
+    # convert full name to abbreviation or else na
     return state_abbreviation_map.get(state, 'NA')
 
 
@@ -211,7 +211,7 @@ def clean_dob(value):
         return pd.NA
 
 
-# add 'age' column based on cleaned 'dob'
+# add age column based on cleaned dob
 def add_age_column(dob_column):
     today = date.today()
     return dob_column.apply(
@@ -356,11 +356,11 @@ def clean_sexual_orientation(value):
     if re.match(r'^(missing|n/a|decline to answer|male|female)$', value_str):
         return 'NA'
     
-    # check for Heterosexual/Straight
+    # check for heterosexual/straight
     if re.search(r'(straight|heterosexual)', value_str):
         return 'Heterosexual'
     
-    # Gay/Lesbian
+    # gay/lesbian
     if re.search(r'(gay|lesbian|homosexual|queer)', value_str):
         return 'Homosexual'
     
@@ -583,7 +583,6 @@ def clean_payment_method(method):
         return 'Other'
 
 
-
 #cleanign payable to 
 def clean_payable_to(name):
     if pd.isna(name) or str(name).strip().lower() in ['na', 'missing', '?', '']:
@@ -704,6 +703,7 @@ def clean_data(input_file, sheet_name=None):
     
     # special case apply latitude and longitude
     df[['lat', 'lng']] = df.apply(apply_lat_lng, axis=1)
+    
     df['language'] = df['language'].apply(clean_language_column)
     df['dob'] = df['dob'].apply(clean_dob)
     
@@ -735,7 +735,7 @@ def clean_data(input_file, sheet_name=None):
 def main():
     # check if input file is provided
     if len(sys.argv) < 2:
-        raise ValueError("No input file provided. Usage: python clean_data_script.py <input_file>")
+        raise ValueError("No input file provided. Usage: python datacleaning.py <input_file>")
 
     input_file = sys.argv[1]
 
