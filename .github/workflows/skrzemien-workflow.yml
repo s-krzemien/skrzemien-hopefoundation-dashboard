@@ -7,7 +7,7 @@ on:
     paths:
       - '**/*.csv'
       - '**/*.xlsx'
-      - '!data/uszips.csv'  # Exclude the uszips.csv file
+      - '!data/uszips.csv'  # Exclude this file
 
 permissions:
   contents: write
@@ -29,14 +29,13 @@ jobs:
 
       - name: Install required packages
         run: |
-          pip install pandas numpy requests openpyxl
+          pip install pandas
 
       - name: Identify changed data files
         id: find_files
         run: |
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\.csv$|\.xlsx$' || true)
           echo "FILES=$FILES" >> $GITHUB_ENV
-          echo "Changed files: $FILES"
 
       - name: Print Files Being Processed
         run: |
@@ -46,9 +45,8 @@ jobs:
         if: env.FILES != ''
         run: |
           for FILE in $FILES; do
-            # Make sure to wrap $FILE in quotes in case it has spaces
             echo "Running cleaner on: $FILE"
-            python datacleaning.py "$FILE"  # Wrap $FILE in quotes here
+            python datacleaning.py "$FILE"
           done
 
       - name: Save cleaned output
