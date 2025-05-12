@@ -23,7 +23,7 @@ if page == "Home Page":
     st.title("Patient Assistance Grant Tracker")
     st.markdown("---")
 
-    st.subheader("📌 About This Dashboard")
+    st.subheader("About This Dashboard")
     st.markdown("""
     This dashboard was created to provide insights into the impact and performance of the Nebraska Cancer Specialists Hope Foundation's patient assistance grant program.
 
@@ -36,7 +36,7 @@ if page == "Home Page":
     The goal is to support decision-making and ensure funds are used effectively to help patients in need.
     """)
 
-    st.subheader("🧭 How to Use")
+    st.subheader("How to Use")
     st.markdown("""
     Use the navigation sidebar to access:
     - **Impact & Progress Summary**: Key metrics on grant funding, patient support, and outcomes
