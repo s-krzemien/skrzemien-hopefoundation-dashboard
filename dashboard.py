@@ -242,29 +242,20 @@ elif page == "Impact & Progress Summary":
     total_patients = approved_grants['patient_id'].nunique()
     total_approved = len(approved_grants)
 
-    # 1. only positive remaining balances (actual leftover funds)
+    #only positive remaining balances (actual leftover funds)
     total_remaining = approved_grants[approved_grants['remaining_balance'] > 0]['remaining_balance'].sum()
 
-    # 2. overspent amounts (convert negative remaining balances to positive overages)
+    # overspent amounts (convert negative remaining balances to positive overages)
     overspent = abs(approved_grants[approved_grants['remaining_balance'] < 0]['remaining_balance'].sum())
 
-    # 3. total used = what was granted - remaining + overspent # dont think im even going to use this 
-    total_used = total_grants - total_remaining + overspent
-    avg_utilization = (total_used / total_grants * 100) if total_grants > 0 else 0
-
-    print("Total grants:", total_grants)
-    print("Total remaining:", total_remaining)
-    print("Overspent:", overspent)
-    print("Total used:", total_used)
-    print("Avg utilization:", avg_utilization)
 
     col1, col2 = st.columns(2)
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
-    col2.metric("Total Overspent Amount", f"${total_remaining:,.2f}")
+    col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
 
     col3, col4 = st.columns(2)
-    col3.metric("Total Approved Grants", overspent)
-    col4.metric("Unique Patients Served", total_used)
+    col3.metric("Total Approved Grants", approved_grants)
+    col4.metric("Unique Patients Served", total_patients)
 
     if 'days_to_support' in summary_data.columns:
         avg_days = summary_data['days_to_support'].mean()
