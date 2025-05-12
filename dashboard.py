@@ -195,26 +195,23 @@ elif page == "Support Breakdown by Demographics":
         st.bar_chart(householdsize_support)
 
     elif demographic_choice == "Age":
-        st.markdown("""
-            **Legend for Age Categories:**
-            
-            - Child: 0-12
-            - Teen: 13-19
-            - Young Adult: 20-35
-             - Adult: 36-50
-             - Middle-aged: 51-65
-             - Senior: 66+
-        """)
+    st.markdown("""
+        **Legend for Age Categories:**
+        
+        - Child: 0-19
+        - Young Adult: 20-35
+        - Adult: 36-65
+        - Senior: 66+
+    """)
 
-    # Clean the 'age_category' column to remove extra spaces and make sure the case matches
-    stdf['age_category'] = stdf['age_category'].str.strip().str.title()  # Remove spaces and standardize case
+    # define order for the categories
+    age_order = ["Child", "Young Adult", "Adult", "Senior"]
 
-    # Now try reindexing
-    age_order = ["Child", "Teen", "Young Adult", "Adult", "Middle-aged", "Senior"]
-
+    # group by age_category and calculate the sum of the amounts
     age_support = stdf.groupby('age_category')['amount'].sum()
-    age_support = age_support.reindex(age_order)  # Reorder based on custom order
 
+    # ensure the chart shows categories in the desired order
+    age_support = age_support.reindex(age_order)
     st.write(age_support)
     st.bar_chart(age_support)
     
