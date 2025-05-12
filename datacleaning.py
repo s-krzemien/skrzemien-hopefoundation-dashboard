@@ -40,6 +40,7 @@ def clean_app_year(app_year):
 def clean_remaining_balance(val):
     try:
         num = float(val)
+        # setting 'allowed' statuses for easier flagging. didn't end up using this explicitly but still helpful
         if pd.isna(num):
             return {"remaining_balance": None, "over_balance": None, "status": "Missing value"}
         elif num < 0:
@@ -50,7 +51,6 @@ def clean_remaining_balance(val):
         return {"remaining_balance": None, "over_balance": None, "status": "Invalid entry"}
 
 
-
 # cleaning the payment_submitted
 def clean_payment_status(value):
     if value == 'Yes':
@@ -58,13 +58,14 @@ def clean_payment_status(value):
     elif value == 'No':
         return 'No'
     try:
+        # to accept the entries in date format since some are yes and some are dates
         parsed_date = pd.to_datetime(value, errors='raise').date()
         return parsed_date
     except (ValueError, TypeError):
         return 'NA'
 
 
-# step 3: calculate days to support
+# additional category: calculate days to support
 def calculate_days_to_support(row):
     support_date = row['payment_submitted']
     request_date = row['grant_req_date']
@@ -106,16 +107,16 @@ def clean_city(city):
         return 'NA'
     # remove non-alphabetical characters and replace with a space
     city = re.sub(r'[^a-zA-Z\s]', '', city)
-    # handle apostrophes or hyphens (this obviously doesnt occur in the dataset but just to handle future entries like st. louis)
+    # handle apostrophes or hyphens (this actually doesnt occur in the dataset but just to handle potential future entries like st. louis)
     city = re.sub(r'[^a-zA-Z\s\'-]', '', city)
-    # convert to lowercase and capitalize the first letter of each word
+    # convert to lowercase and capitalize the first letter of each word for consistency
     city = ' '.join([word.capitalize() for word in city.strip().split()])
     return city
 
 
 
 
-# Pt_state cleaing
+# pt_state cleaing
 # doing all states because i want it to be compatible with future entries
 state_abbreviation_map = {
     'Alabama': 'AL', 'Alaska': 'AK', 'Arizona': 'AZ', 'Arkansas': 'AR',
@@ -144,41 +145,39 @@ def clean_state(state):
 
 
 
-# step 1: TRYING ZIP AGAIN
+# zip code cleaning
 zip_df = pd.read_csv("uszips.csv", dtype={"zip": str})
 zip_df['zip'] = zip_df['zip'].astype(str)
 
 # create a dictionary
 zip_dict = dict(zip(zip_df['zip'], zip_df[['lat', 'lng']].values))
 
-# step 2: get lat and lng from og dataset
+# get lat and lng from og dataset
 def get_lat_lng(zip_code):
     if pd.isna(zip_code):
         return None, None
     
-    # Look up lat and lng directly from zip_dict
+    # look up lat and lng directly from zip_dict
     if zip_code in zip_dict:
         return zip_dict[zip_code]
     else:
         return None, None
 
-# step 3: function to apply get_lat_lng to the dataframe
+# function to apply get_lat_lng to the dataframe
 def apply_lat_lng(row):
     lat, lng = get_lat_lng(row['pt_zip'])
     return pd.Series([lat, lng], index=['lat', 'lng'])
 
 
-
 # language column 
-# same as states, overcompensating so it is compatible with many languages. I looked up common languages. 
+# same as states, overcompensating so it is compatible with many languages. I looked up 25 most common languages. 
 language_list = [
     'english', 'spanish', 'russian', 'romanian', 'bosnian', 'karen',
     'somali', 'ukrainian', 'vietnamese', 'chinese', 'arabic', 'french',
     'german', 'portuguese', 'mandarin', 'cantonese', 'japanese', 'korean',
-    'polish', 'thai', 'swahili', 'tagalog', 'urdu', 'bengali'
-]
+    'polish', 'thai', 'swahili', 'tagalog', 'urdu', 'bengali', 'hindi', 'indonesian', 'turkish', 'punjabi']
 
-# regex pattern to match any language in the list
+#  making regex pattern to match any language in the list
 lang_pattern = re.compile(r'\b(' + '|'.join(language_list) + r')\b', re.IGNORECASE)
 
 def clean_language_column(value):
@@ -190,7 +189,7 @@ def clean_language_column(value):
     # find all matching languages
     found = re.findall(lang_pattern, value)
 
-    # remove duplicates (just in case)
+    # remove duplicates (just in case since we are classifying multiple as bilingual)
     found = sorted(set(lang.title() for lang in found))
 
     if not found:
@@ -221,6 +220,7 @@ def add_age_column(dob_column):
     ).astype('Int64')
 
 
+#categorizing ages for easier visualization of distributions later on, not totally necessary
 def add_age_category_column(age_column):
     """
     Adds an 'age_category' column based on the 'age' column with these categories:
@@ -269,23 +269,22 @@ def clean_marriage_status(status):
     return 'NA'
 
 
-
 # cleaning gender 
 # want to be inclusive for future entries so i put a few extra options below :)
-gender_mapping = {
+gender_patterns = {
     'Female': ['female', 'woman', 'girl', 'f'],
     'Male': ['male', 'man', 'boy', 'm'],
     'Transgender Female': ['transgender female', 'trans woman', 'transwoman', 'ftm'],
     'Transgender Male': ['transgender male', 'trans man', 'transman', 'mtf'],
-    'Non-Binary': ['non-binary', 'nonbinary','genderqueer', 'agender', 'queer', 'non binary'],
+    'Non-Binary': ['non-binary', 'nonbinary', 'genderqueer', 'agender', 'queer', 'non binary'],
     'NA': []}
 
 def clean_gender(gender):
     if pd.isna(gender) or gender == '' or gender == ' ':
         return 'NA'
     gender = str(gender).lower()
-    # check against each category
-    for category, terms in gender_mapping.items():
+
+    for category, terms in gender_patterns.items():
         if gender in terms:
             return category
 
@@ -293,14 +292,14 @@ def clean_gender(gender):
 
 
 
-# race
+# race cleaning
 def clean_race(race):
     if pd.isna(race) or race.strip().lower() in ['missing', 'decline to answer', '']:
         return 'NA'
     
     race = race.strip().lower()
 
-    # standardize race groups, want to be inclusive for future entries
+    # standardize race groups, again, want to be inclusive for future entries
     if re.search(r'american indian|alaska native|native american', race):
         return 'Native American or Alaska Native'
     elif re.search(r'asian|chinese|japanese|korean', race):
@@ -338,20 +337,20 @@ def clean_hispanic_latino(value):
     # check for 'non-hispanic'
     if 'non-hispanic' in value_str:
         return 'No'
-    
+        
+    # if entry explicitly says NO then it is no. set this up with latino following in next line bc it was detecting no in latino as no
     if 'no' == value_str:
         return 'No'
     
-    # check for 'Yes' or any hispanic/latino-related terms 
-    if 'hispanic' in value_str or 'latino' in value_str:
+    # check for 'yes' or any hispanic/latino-related terms 
+    if 'hispanic' in value_str or 'latino' in value_str or 'yes' in value_str or 'y' in value_str:
         return 'Yes'
     
-    # check for 'decline to answer', grouping with NA bc we dont know what they are.
+    # check for 'decline to answer', grouping with NA bc we dont know what they are
     if 'decline' in value_str:
         return 'NA'
     
     return 'NA'
-
 
 
 
@@ -378,7 +377,7 @@ def clean_sexual_orientation(value):
 
 
 
-#cleaning insurance type
+#cleaning insurance type, categorizing for dashboard simplicity in visualization
 def clean_insurance_type(insurance):
     insurance_patterns = {
         'Public Insurance': r'(?i)(medicare.*(medicaid|other))',
@@ -393,8 +392,6 @@ def clean_insurance_type(insurance):
             return category
     
     return 'NA'
-
-
 
 
 # cleaning household size 
@@ -424,8 +421,7 @@ def clean_household_size(size):
 
 
 
-
-# total monthly household income 
+# total monthly household income, categorized
 def clean_income(income):
     if pd.isna(income) or str(income).strip().lower() in ['', 'missing', 'na', 'nan', 'none']:
         return 'NA'
@@ -448,7 +444,7 @@ def clean_income(income):
 
 
 
-#cleaning distance
+#cleaning distance, categorizing
 def clean_distance(distance):
     if pd.isna(distance):
         return 'NA'
@@ -458,7 +454,7 @@ def clean_distance(distance):
         
         # check for unrealistic distances (distances greater than 3000 miles)
         if distance < 0 or distance > 3000:
-            return 'Missing'  # flag any unrealistic distance as missing (same as above)
+            return 'Missing'  # any unrealistic distance as missing (same as above, could just do invalid but dont want it showing up in dashboard bc its not helpful)
         if distance < 20:
             return 'Short'
         elif 20 <= distance < 120:
@@ -470,7 +466,7 @@ def clean_distance(distance):
         return 'NA'
 
 
-# cleaning referral source
+# cleaning referral source, categorizing w regex
 def classify_referral_source(referral):
     source_patterns = {
         'Pediatric Hospitals': r'(children|pediatric)',
@@ -501,7 +497,7 @@ def clean_referred_by(name):
     if name.lower() in missing_values:
         return 'NA' 
 
-    name = name.title()  #(first letter of each word capitalized)
+    name = name.title()  #first letter of each word capitalized
     
     # handle specific exceptions like Dr. which should remain capitalized
     name = name.replace('Dr.', 'Dr.')
@@ -510,8 +506,7 @@ def clean_referred_by(name):
 
 
 
-
-#classification of assistance type
+#categorization of assistance type
 assistance_patterns = {
     'Car Payment': r'car payment',
     'Housing': r'housing',
@@ -657,7 +652,6 @@ def clean_application_signed(value):
         return 'NA' 
 
 
-
 #notes cleaning
 def clean_notes(value):
     if pd.isna(value) or str(value).strip() == '':
@@ -666,13 +660,13 @@ def clean_notes(value):
     
 
 def clean_data(input_file, sheet_name=None):
-    # Load file based on extension
+    # load file based on extension
     if input_file.endswith('.xlsx'):
         df = pd.read_excel(input_file, sheet_name=sheet_name)
     else:
         df = pd.read_csv(input_file)
 
-    # Standardize column names
+    # standardize column names (not necessary but wrote all my code based on this so im too lazy to go back and change all that)
     df.columns = (
         df.columns
         .str.strip()
@@ -681,7 +675,7 @@ def clean_data(input_file, sheet_name=None):
         .str.replace(r'[^\w\s]', '', regex=True)
     )
 
-    # Rename specific columns for easier reference
+    # rename specific columns for easier reference
     df = df.rename(columns={
         'reason__pendingno': 'reason_pending',
         'distance_roundtriptx': 'distance',
@@ -689,47 +683,39 @@ def clean_data(input_file, sheet_name=None):
         'patient_letter_notified_directlyindirectly_through_rep': 'notified'
     })
 
-    # Apply cleaning functions
+    # apply cleaning functions
     df['patient_id'] = df['patient_id'].apply(clean_patient_id)
     df['grant_req_date'] = df['grant_req_date'].apply(clean_grant_req_date)
     df['app_year'] = df['app_year'].apply(clean_app_year)
-    
-    # Step 1: Clean remaining_balance
     df['remaining_balance_cleaned'] = df['remaining_balance'].apply(clean_remaining_balance)
     
-    # Step 2: Normalize dictionary into separate columns
+    # spcial case normalize dictionary into separate columns
     df[['remaining_balance', 'over_balance', 'balance_status']] = pd.json_normalize(df['remaining_balance_cleaned'])
 
-    # Step 3: Drop the temporary column
+    # special case drop the temporary column
     df.drop(columns=['remaining_balance_cleaned'], inplace=True)
 
-    # Step 4: Clean request_status using allowed values
+    # special case request_status using allowed values
     allowed_statuses = ['Approved', 'Denied', 'Pending']
     df['request_status'] = df['request_status'].where(df['request_status'].isin(allowed_statuses), 'NA')
 
-    # Clean additional columns
     df['payment_submitted'] = df['payment_submitted'].apply(clean_payment_status)
     df['grant_req_date'] = pd.to_datetime(df['grant_req_date'], errors='coerce').dt.date
     df['days_to_support'] = df.apply(calculate_days_to_support, axis=1)
-    
-    # Clean other columns
     df['reason_pending'] = df['reason_pending'].apply(clean_reason_pending)
     df['pt_city'] = df['pt_city'].apply(clean_city)
     df['pt_state'] = df['pt_state'].apply(clean_state)
     df['pt_zip'] = df['pt_zip'].astype(str)
     
-    # Apply latitude and longitude
+    # special case apply latitude and longitude
     df[['lat', 'lng']] = df.apply(apply_lat_lng, axis=1)
-    
-    # Clean remaining columns
     df['language'] = df['language'].apply(clean_language_column)
     df['dob'] = df['dob'].apply(clean_dob)
     
-    # Apply 'age' and 'age_category' columns
-    df['age'] = add_age_column(df['dob'])  # Apply to dob column
-    df['age_category'] = add_age_category_column(df['age'])  # Apply to age column
+    # special case apply 'age' and 'age_category' columns
+    df['age'] = add_age_column(df['dob'])  # apply to dob column
+    df['age_category'] = add_age_category_column(df['age'])  # apply to age column
 
-    # Clean marital status, gender, and other columns
     df['marital_status'] = df['marital_status'].apply(clean_marriage_status)
     df['gender'] = df['gender'].apply(clean_gender)
     df['race'] = df['race'].apply(clean_race)
@@ -763,10 +749,10 @@ def main():
         raise FileNotFoundError(f"Input file '{input_file}' not found.")
 
     # determine output file
-    output_file = os.path.splitext(input_file)[0] + "_CLEANED.csv"
+    output_file = os.path.splitext(input_file)[0] + "_CLEAN.csv"
     sheet_name = "PA Log Sheet" if input_file.endswith(".xlsx") else None
 
-    # Print the input and output file paths
+    # print the input and output file paths
     print(f"Reading from: {input_file}")
     cleaned_df = clean_data(input_file, sheet_name=sheet_name)
 
