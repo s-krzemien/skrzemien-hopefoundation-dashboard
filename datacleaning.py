@@ -754,20 +754,28 @@ def clean_data(input_file, sheet_name=None):
 def main():
     if len(sys.argv) < 2:
         raise ValueError("No input file provided. Usage: python datacleaning.py <input_file>")
-    
-    input_file = sys.argv[1]
 
-    # make sure the input file path is correct and exists
+    input_file = os.path.abspath(sys.argv[1])  # Get absolute path
+
     if not os.path.exists(input_file):
         raise FileNotFoundError(f"Input file '{input_file}' not found.")
-    
-    # determine output file
+
+    # Set output file name
     output_file = os.path.splitext(input_file)[0] + "_CLEANED.csv"
-    sheet_name = "Support_Application_Data" if input_file.endswith(".xlsx") else None
 
-    print(f"Reading from: {input_file}")  # **Ensure file path is printed correctly for debugging**
+    # Determine file type and read accordingly
+    if input_file.endswith(".xlsx"):
+        try:
+            # Try to get the first sheet name automatically
+            xl = pd.ExcelFile(input_file)
+            sheet_name = xl.sheet_names[0]  # Take the first sheet
+            print(f"Detected sheet: {sheet_name}")
+        except Exception as e:
+            raise ValueError(f"Failed to read Excel sheet: {e}")
+    else:
+        sheet_name = None  # Not used for CSVs
 
-    # **Process the data**
+    print(f"Reading from: {input_file}")
     cleaned_df = clean_data(input_file, sheet_name=sheet_name)
 
     print(f"Saving cleaned data to: {output_file}")
@@ -775,6 +783,5 @@ def main():
 
     print(f"Cleaning completed: {input_file} -> {output_file}")
 
-# run the main function only if the script is executed
 if __name__ == "__main__":
     main()
