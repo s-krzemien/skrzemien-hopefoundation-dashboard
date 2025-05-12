@@ -38,12 +38,14 @@ if page == "Home Page":
 
     st.subheader("How to Use")
     st.markdown("""
-    Use the navigation sidebar to access:
-    - **Impact & Progress Summary**: Key metrics on grant funding, patient support, and outcomes
-    - **Trends Over Time**: Visualizations of funding patterns and patient engagement
-    - **Raw Data Review**: Explore the underlying data and filters
+    Use the Sidebar to Navigate Between Sections: 
     
-    For any questions or suggestions, please reach out to the project team.
+    - **Applications Ready for Review**: View pending requests and their details
+    - **Support Breakdowns by Demographic**: Analyze grant distribution across race, gender, age, and more
+    - **Support Response Time**: Track how long it takes to process and fulfill requests
+    - **Grant Utilization Overview**: Understand how funds are being spent vs. remaining
+    - **Impact & Progress Summary**: Review key performance metrics, patient reach, and trends
+    
     """)
 
     st.markdown("---")
