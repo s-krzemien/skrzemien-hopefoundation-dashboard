@@ -13,7 +13,7 @@ df_list = [pd.read_csv(f) for f in clean_files]
 stdf = pd.concat(df_list, ignore_index=True)
 
 #title
-st.title("Hope Foundation Dashboard")
+st.title("NCS Hope Foundation Dashboard")
 
 # sidebar for navigation
 page = st.sidebar.radio("Select a Page", ["Home Page", "Applications Ready for Review", "Support Breakdown by Demographics", "Support Response Time", "Grant Utilization Overview", "Impact & Progress Summary"])
@@ -53,6 +53,8 @@ if page == "Home Page":
 
 # Applications ready for review page
 elif page == "Applications Ready for Review":
+    st.header("Applications Ready for Review")
+    
     ready_for_review = stdf[stdf['request_status'] == 'Pending']
 
     # handle NA values in 'application_signed' and replace them with 'missing'
@@ -76,7 +78,6 @@ elif page == "Applications Ready for Review":
 # 2. Support Breakdown by Demographic Page
 elif page == "Support Breakdown by Demographics":
     st.header("Support Breakdown by Demographics")
-
     demographics = [
         'Gender', 'Location', 'Zip Code', 'Language Spoken', 'Hispanic or Latino', 
         'Sexuality', 'Race', 'Insurance Type', 'Total Household Gross Monthly Income', 'Marital Status', 'Household Size', 'Age'
