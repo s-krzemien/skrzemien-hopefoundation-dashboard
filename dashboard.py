@@ -4,11 +4,11 @@ import pydeck as pdk
 import plotly.express as px
 import glob
 
-# Find cleaned files (assuming all cleaned CSV files follow the *CLEANED.csv pattern)
+# find cleaned files (all cleaned CSV files follow the __CLEANED.csv pattern)
 cleaned_files = glob.glob("*_CLEANED.csv")
 print(f"Found cleaned files: {cleaned_files}")
 
-# Combine all cleaned CSV files into a single dataframe
+# combine all cleaned CSV files into a single dataframe
 df_list = [pd.read_csv(f) for f in cleaned_files]
 stdf = pd.concat(df_list, ignore_index=True)
 
