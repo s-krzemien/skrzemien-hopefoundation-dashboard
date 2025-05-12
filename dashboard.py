@@ -1,0 +1,280 @@
+import streamlit as st
+import pandas as pd
+import pydeck as pdk
+import plotly.express as px
+import glob
+
+# Find cleaned files (assuming all cleaned CSV files follow the *CLEANED.csv pattern)
+cleaned_files = glob.glob("*_CLEANED.csv")
+print(f"Found cleaned files: {cleaned_files}")
+
+# Combine all cleaned CSV files into a single dataframe
+df_list = [pd.read_csv(f) for f in cleaned_files]
+stdf = pd.concat(df_list, ignore_index=True)
+
+#title
+st.title("Hope Foundation Dashboard")
+
+# sidebar for navigation
+page = st.sidebar.radio("Select a Page", ["Applications Ready for Review", "Support Breakdown by Demographics", "Support Response Time", "Grant Utilization Overview", "Impact & Progress Summary"])
+
+# 1. Applications ready for review page
+if page == "Applications Ready for Review":
+    ready_for_review = stdf[stdf['request_status'] == 'Pending']
+
+    # handle NA values in 'application_signed' and replace them with 'missing'
+    ready_for_review['application_signed'] = ready_for_review['application_signed'].fillna('Missing')
+
+    # dropdown for filtering based on committee signature status
+    signature_status = st.selectbox("Select Committee Signature Status", ['All', 'Signed', 'Not Signed', 'Missing'])
+
+    if signature_status != 'All':
+        if signature_status == 'Signed':
+            ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'Yes']
+        elif signature_status == 'Not Signed':
+            ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'No']
+        elif signature_status == 'Missing':
+            ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'Missing']
+
+    # display the filtered applications
+    st.write(f"Displaying applications with signature status '{signature_status}'")
+    st.dataframe(ready_for_review)
+
+# 2. Support Breakdown by Demographic Page
+elif page == "Support Breakdown by Demographics":
+    st.header("Support Breakdown by Demographics")
+
+    demographics = [
+        'Gender', 'Location', 'Zip Code', 'Language Spoken', 'Hispanic or Latino', 
+        'Sexuality', 'Race', 'Insurance Type', 'Total Household Gross Monthly Income', 'Marital Status', 'Household Size', 'Age'
+    ]
+
+    # select which demographic to filter by
+    demographic_choice = st.selectbox("Select Demographic", demographics)
+
+    # filter & display data based on the selected demographic
+    if demographic_choice == "Gender":
+        # sum support by amount and _____ (in this case gender)
+        gender_support = stdf.groupby("gender")["amount"].sum()  
+        st.write(gender_support)
+        st.bar_chart(gender_support)
+
+    elif demographic_choice == "Insurance Type":
+        insurance_support = stdf.groupby("insurance_type")["amount"].sum()  
+        st.write(insurance_support)
+        st.bar_chart(insurance_support)
+
+    elif demographic_choice == "Sexuality":
+        sexuality_support = stdf.groupby("sexual_orientation")["amount"].sum()  
+        st.write(sexuality_support)
+        st.bar_chart(sexuality_support)
+
+    elif demographic_choice == "Race":
+        racial_support = stdf.groupby("race")["amount"].sum()  
+        st.write(racial_support)
+        st.bar_chart(racial_support)
+
+    elif demographic_choice == "Language Spoken":
+        language_support = stdf.groupby("language")["amount"].sum()  
+        st.write(language_support)
+        st.bar_chart(language_support)
+
+    elif demographic_choice == "Hispanic or Latino":
+        ethnicity_support = stdf.groupby("hispaniclatino")["amount"].sum()  
+        st.write(ethnicity_support)
+        st.bar_chart(ethnicity_support)
+
+    elif demographic_choice == 'Location':
+        state_support = stdf.groupby("pt_state")["amount"].sum()
+        st.write(state_support)
+        st.bar_chart(state_support)
+
+    elif demographic_choice == "Total Household Gross Monthly Income":
+        st.header("Support Breakdown by Total Household Gross Monthly Income")
+
+        # legend/Explanation
+        st.markdown("""
+            **Legend for Household Income:**
+            
+            - **High**: Represents households with a gross monthly income **greater than $7,000**.
+            - **Middle**: Represents households with a gross monthly income **between $3,000 - $7,000**.
+            - **Low**: Represents households with a gross monthly income **less than $3,000**.
+            
+            This breakdown helps to analyze how support is distributed across different income levels.
+        """)
+
+        income_support = stdf.groupby("total_household_gross_monthly_income")["amount"].sum()
+        st.write(income_support)
+        st.bar_chart(income_support)
+
+    elif demographic_choice == "Zip Code":
+        st.header("Support by Zip Code")
+
+        zip_code_support = stdf.groupby("pt_zip")["amount"].sum()
+        st.write(zip_code_support)
+
+        map_data = stdf[['lat', 'lng', 'amount', 'pt_zip']] 
+
+        # clean lat/lng to remove invalid values
+        map_data["lat"] = pd.to_numeric(map_data["lat"], errors="coerce")
+        map_data["lng"] = pd.to_numeric(map_data["lng"], errors="coerce")
+        map_data = map_data.dropna(subset=["lat", "lng"])
+
+
+        # drop rows without coordinates or amount
+        map_data = map_data.dropna(subset=["lat", "lng", "amount"])
+
+        map_data["lat"] = map_data["lat"].astype(float)
+        map_data["lng"] = map_data["lng"].astype(float)
+        map_data["amount"] = map_data["amount"].astype(float)
+
+        # create a pydeck map (full disclosure: i used chatgpt to figure this out and i know you had a great option for this but I already had begun working with this so i decided to just to commit to it)
+        deck = pdk.Deck(
+            initial_view_state=pdk.ViewState(
+                latitude=map_data['lat'].mean(),
+                longitude=map_data['lng'].mean(),
+                zoom=10,
+            ),
+            layers=[
+                pdk.Layer(
+                    'ScatterplotLayer',
+                    map_data,
+                    get_position='[lng, lat]',
+                    get_radius=1000,
+                    get_fill_color=[255, 0, 0, 140],
+                    pickable=True,
+                )
+            ]
+        )
+
+        st.pydeck_chart(deck)
+
+
+    elif demographic_choice == "Marital Status":
+        marriage_support = stdf.groupby('marital_status')['amount'].sum()
+        st.write(marriage_support)
+        st.bar_chart(marriage_support)
+
+    elif demographic_choice == "Household Size":
+        householdsize_support = stdf.groupby('household_size')['amount'].sum()
+        st.write(householdsize_support) 
+        st.bar_chart(householdsize_support)
+
+    elif demographic_choice == "Age":
+        st.markdown("""
+            **Legend for Household Income:**
+            
+            - Child: 0-12
+            - Teen: 13-19
+            - Young Adult: 20-35
+             - Adult: 36-50
+             - Middle-aged: 51-65
+             - Senior: 66+
+        """)
+
+        age_support = stdf.groupby('age_category')['amount'].sum()
+        st.write(age_support)
+        st.bar_chart(age_support)
+
+
+elif page == "Support Response Time":
+    st.header("Support Response Time")
+
+    # summary statistics
+    st.subheader("Summary Statistics")
+    st.write(stdf['days_to_support'].dropna().describe())
+
+    # histogram of response times
+    st.subheader("Distribution of Response Times (in Days)")
+    st.bar_chart(stdf['days_to_support'].value_counts().sort_index())
+
+    
+
+#4. Grant Utilization Page
+elif page == "Grant Utilization Overview":
+    st.header("Grant Utilization by Year")
+
+    # filter patients with a positive remaining balance
+    positive_balance = stdf[stdf['remaining_balance'] > 0]
+
+    # count how many patients have a positive remaining balance
+    patients_with_positive_balance = positive_balance['patient_id'].nunique()
+
+    st.subheader(f"Number of Patients with Positive Balance: {patients_with_positive_balance}")
+
+    # binning the remaining_balance into categories by 300 increments
+    bin_labels = ['0-300', '301-600', '601-900', '901-1200', '1201-1500', '1501+']
+    bins = [0, 300, 600, 900, 1200, 1500, float('inf')]
+
+    positive_balance['balance_bins'] = pd.cut(positive_balance['remaining_balance'], bins=bins, labels=bin_labels)
+
+    st.subheader("Distribution of Remaining Balances (Binned)")
+    st.bar_chart(positive_balance['balance_bins'].value_counts().sort_index(), use_container_width=True)
+
+
+    # *** Grants by Assistance Type *** (same page)
+
+    st.subheader("Grant Distribution by Assistance Type")
+
+    # count number of grants by assistance type
+    assistance_type_counts = stdf['assistance_type'].value_counts()
+
+
+    st.write(assistance_type_counts)
+# created the plot using streamlit pie chart option
+    fig = assistance_type_counts.plot(kind='pie', autopct='%1.1f%%', figsize=(8, 8), ylabel='', title='Grants by Assistance Type'
+    ).get_figure()
+    st.pyplot(fig)
+
+
+#5. Impact & Progress Summary 
+elif page == "Impact & Progress Summary":
+    st.header("Impact & Progress Summary (All Time)")
+
+    summary_data = stdf.copy()
+    summary_data['grant_req_date'] = pd.to_datetime(summary_data['grant_req_date'], errors='coerce')
+
+    st.subheader("Key Metrics")
+
+    approved_grants = summary_data[summary_data['request_status'] == "Approved"]
+
+    total_grants = approved_grants['amount'].sum()
+    total_patients = approved_grants['patient_id'].nunique()
+    total_approved = len(approved_grants)
+
+    # 1. only positive remaining balances (actual leftover funds)
+    total_remaining = approved_grants[approved_grants['remaining_balance'] > 0]['remaining_balance'].sum()
+
+    # 2. overspent amounts (convert negative remaining balances to positive overages)
+    overspent = abs(approved_grants[approved_grants['remaining_balance'] < 0]['remaining_balance'].sum())
+
+    # 3. total used = what was granted - remaining + overspent # dont think im even going to use this 
+    total_used = total_grants - total_remaining + overspent
+    avg_utilization = (total_used / total_grants * 100) if total_grants > 0 else 0
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
+    col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
+    col3.metric("Total Approved Grants", total_approved)
+    col4.metric("Unique Patients Served", total_patients)
+
+    if 'days_to_support' in summary_data.columns:
+        avg_days = summary_data['days_to_support'].mean()
+        st.metric("Avg. Days to Support", f"{avg_days:.1f} days")
+
+    # grant trend chart
+    st.subheader("Grant Request Trend Over Time")
+    if 'grant_req_date' in summary_data.columns:
+        summary_data['grant_month'] = summary_data['grant_req_date'].dt.to_period('M')
+        monthly_requests = summary_data.dropna(subset=['grant_month']).groupby('grant_month').size()
+        monthly_requests.index = monthly_requests.index.to_timestamp()
+        monthly_requests.index.name = None  # removes 'grant_month' label from x-axis
+
+        fig = px.line(
+            monthly_requests,
+            x=monthly_requests.index,
+            y=monthly_requests.values,
+            labels={'x': 'Month', 'y': 'Number of Requests'},
+            title='Monthly Grant Requests Over Time'
+        )
+        st.plotly_chart(fig, use_container_width=True)
