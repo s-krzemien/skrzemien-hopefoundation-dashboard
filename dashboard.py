@@ -61,15 +61,15 @@ elif page == "Applications Ready for Review":
     ready_for_review['application_signed'] = ready_for_review['application_signed'].fillna('Missing')
 
     # dropdown for filtering based on committee signature status
-    signature_status = st.selectbox("Select Committee Signature Status", ['All', 'Signed', 'Not Signed', 'Missing'])
+    signature_status = st.selectbox("Select Committee Signature Status", ['All', 'Signed', 'Not Signed', 'Unsure'])
 
     if signature_status != 'All':
         if signature_status == 'Signed':
             ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'Yes']
         elif signature_status == 'Not Signed':
             ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'No']
-        elif signature_status == 'Missing':
-            ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'Missing']
+        elif signature_status == 'Unsure':
+            ready_for_review = ready_for_review[ready_for_review['application_signed'] == 'Unsure']
 
     # display the filtered applications
     st.write(f"Displaying applications with signature status '{signature_status}'")
