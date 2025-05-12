@@ -7,7 +7,7 @@ on:
     paths:
       - '**/*.csv'
       - '**/*.xlsx'
-      - '!data/uszips.csv'  # Exclude the uszips.csv file (if it’s in the "data" folder)
+      - '!data/uszips.csv'  # Exclude the uszips.csv file
 
 permissions:
   contents: write
@@ -37,6 +37,10 @@ jobs:
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\.csv$|\.xlsx$' || true)
           echo "FILES=$FILES" >> $GITHUB_ENV
           echo "Changed files: $FILES"
+
+      - name: Print Files Being Processed
+        run: |
+          echo "Files being processed: $FILES"
 
       - name: Run data cleaning script for each file
         if: env.FILES != ''
