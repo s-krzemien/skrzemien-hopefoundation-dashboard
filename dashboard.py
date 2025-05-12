@@ -206,14 +206,18 @@ elif page == "Support Breakdown by Demographics":
              - Senior: 66+
         """)
 
-        age_order = ["Child", "Teen", "Young Adult", "Adult", "Middle-aged", "Senior"]
+    # Clean the 'age_category' column to remove extra spaces and make sure the case matches
+    stdf['age_category'] = stdf['age_category'].str.strip().str.title()  # Remove spaces and standardize case
 
-        age_support = stdf.groupby('age_category')['amount'].sum()
-        age_support = age_support.reindex(age_order)  # reorder the index, before was like adult, child, senior etc didnt make sense
+    # Now try reindexing
+    age_order = ["Child", "Teen", "Young Adult", "Adult", "Middle-aged", "Senior"]
 
-        st.write(age_support)
-        st.bar_chart(age_support)
+    age_support = stdf.groupby('age_category')['amount'].sum()
+    age_support = age_support.reindex(age_order)  # Reorder based on custom order
 
+    st.write(age_support)
+    st.bar_chart(age_support)
+    
 
 elif page == "Support Response Time":
     st.header("Support Response Time")
