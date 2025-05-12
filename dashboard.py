@@ -19,7 +19,7 @@ st.title("Hope Foundation Dashboard")
 page = st.sidebar.radio("Select a Page", ["Home Page", "Applications Ready for Review", "Support Breakdown by Demographics", "Support Response Time", "Grant Utilization Overview", "Impact & Progress Summary"])
 
 #Home page
-elif page == "Home Page":
+if page == "Home Page":
     st.title("Patient Assistance Grant Tracker")
     st.markdown("---")
 
@@ -50,7 +50,7 @@ elif page == "Home Page":
     st.caption("Dashboard created using Streamlit · Updated monthly")
 
 # Applications ready for review page
-if page == "Applications Ready for Review":
+elif page == "Applications Ready for Review":
     ready_for_review = stdf[stdf['request_status'] == 'Pending']
 
     # handle NA values in 'application_signed' and replace them with 'missing'
