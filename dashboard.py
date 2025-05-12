@@ -254,16 +254,17 @@ elif page == "Impact & Progress Summary":
     st.metric("Returning Patients Supported", num_returning_patients)
 
 
-    # first row (3 metrics)
+    # Row 1: Three metrics
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
     col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
     col3.metric("Total Approved Grants", len(approved_grants))
 
-    # second row (2 metrics)
-    col4, col5 = st.columns(2)
+    # Row 2: Three more metrics
+    col4, col5, col6 = st.columns(3)
     col4.metric("Unique Patients Served", total_patients)
     col5.metric("Returning Patients Supported", num_returning_patients)
+    col6.metric("Avg. Days to Support", f"{avg_days:.1f} days")
 
     if 'days_to_support' in summary_data.columns:
         avg_days = summary_data['days_to_support'].mean()
