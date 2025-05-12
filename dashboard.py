@@ -248,6 +248,11 @@ elif page == "Impact & Progress Summary":
     # overspent amounts (convert negative remaining balances to positive overages)
     overspent = abs(approved_grants[approved_grants['remaining_balance'] < 0]['remaining_balance'].sum())
 
+    returning_patients = approved_grants['patient_id'].value_counts()
+    num_returning_patients = (returning_patients > 1).sum()
+
+    st.metric("Returning Patients Supported", num_returning_patients)
+
 
     col1, col2 = st.columns(2)
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
@@ -256,6 +261,7 @@ elif page == "Impact & Progress Summary":
     col3, col4 = st.columns(2)
     col3.metric("Total Approved Grants", len(approved_grants))
     col4.metric("Unique Patients Served", total_patients)
+    col5.metric("Returning Patients Supported", num_returning_patients)
 
     if 'days_to_support' in summary_data.columns:
         avg_days = summary_data['days_to_support'].mean()
