@@ -242,33 +242,29 @@ elif page == "Impact & Progress Summary":
     total_patients = approved_grants['patient_id'].nunique()
     total_approved = len(approved_grants)
 
-    #only positive remaining balances (actual leftover funds)
     total_remaining = approved_grants[approved_grants['remaining_balance'] > 0]['remaining_balance'].sum()
-
-    # overspent amounts (convert negative remaining balances to positive overages)
     overspent = abs(approved_grants[approved_grants['remaining_balance'] < 0]['remaining_balance'].sum())
 
     returning_patients = approved_grants['patient_id'].value_counts()
     num_returning_patients = (returning_patients > 1).sum()
 
-    st.metric("Returning Patients Supported", num_returning_patients)
+    # Calculate avg_days if the column exists
+    avg_days = summary_data['days_to_support'].mean() if 'days_to_support' in summary_data.columns else None
 
-
-    # Row 1: Three metrics
+    # Row 1
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
     col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
     col3.metric("Total Approved Grants", len(approved_grants))
 
-    # Row 2: Three more metrics
+    # Row 2
     col4, col5, col6 = st.columns(3)
     col4.metric("Unique Patients Served", total_patients)
     col5.metric("Returning Patients Supported", num_returning_patients)
-    col6.metric("Avg. Days to Support", f"{avg_days:.1f} days")
-
-    if 'days_to_support' in summary_data.columns:
-        avg_days = summary_data['days_to_support'].mean()
-        st.metric("Avg. Days to Support", f"{avg_days:.1f} days")
+    if avg_days is not None:
+        col6.metric("Avg. Days to Support", f"{avg_days:.1f} days")
+    else:
+        col6.metric("Avg. Days to Support", "N/A")
 
     # grant trend chart
     st.subheader("Grant Request Trend Over Time")
