@@ -4,3 +4,4 @@ numpy
 openpyxl
 streamlit
 glob2
+matplotlib
