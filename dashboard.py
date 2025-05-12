@@ -252,9 +252,11 @@ elif page == "Impact & Progress Summary":
     total_used = total_grants - total_remaining + overspent
     avg_utilization = (total_used / total_grants * 100) if total_grants > 0 else 0
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2 = st.columns(2)
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
     col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
+
+    col3, col4 = st.columns(2)
     col3.metric("Total Approved Grants", total_approved)
     col4.metric("Unique Patients Served", total_patients)
 
