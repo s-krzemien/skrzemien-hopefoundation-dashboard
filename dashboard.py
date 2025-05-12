@@ -195,25 +195,25 @@ elif page == "Support Breakdown by Demographics":
         st.bar_chart(householdsize_support)
 
     elif demographic_choice == "Age":
-    st.markdown("""
-        **Legend for Age Categories:**
+        st.markdown("""
+            **Legend for Age Categories:**
         
-        - Child: 0-19
-        - Young Adult: 20-35
-        - Adult: 36-65
-        - Senior: 66+
-    """)
+            - Child: 0-19
+            - Young Adult: 20-35
+            - Adult: 36-65
+            - Senior: 66+
+        """)
 
-    # define order for the categories
-    age_order = ["Child", "Young Adult", "Adult", "Senior"]
+        # define order for the categories
+        age_order = ["Child", "Young Adult", "Adult", "Senior"]
 
-    # group by age_category and calculate the sum of the amounts
-    age_support = stdf.groupby('age_category')['amount'].sum()
+        # group by age_category and calculate the sum of the amounts
+        age_support = stdf.groupby('age_category')['amount'].sum()
 
-    # ensure the chart shows categories in the desired order
-    age_support = age_support.reindex(age_order)
-    st.write(age_support)
-    st.bar_chart(age_support)
+        # ensure the chart shows categories in the desired order
+        age_support = age_support.reindex(age_order)
+        st.write(age_support)
+        st.bar_chart(age_support)
     
 
 elif page == "Support Response Time":
