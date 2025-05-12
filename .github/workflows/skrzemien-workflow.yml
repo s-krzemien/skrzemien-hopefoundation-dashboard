@@ -22,7 +22,7 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up Python environment
+      - name: Set up python environment
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
@@ -31,17 +31,18 @@ jobs:
         run: |
           pip install pandas numpy openpyxl
 
-      - name: Identify changed data files
+      - name: ID changed data files
         id: find_files
+        # Identify changed CSV/XLSX files and save them to an environment variable for later steps
         run: |
           FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep -E '\.csv$|\.xlsx$' || true)
           echo "FILES=$FILES" >> $GITHUB_ENV
 
-      - name: Print Files Being Processed
+      - name: Print the files being processed
         run: |
           echo "Files being processed: $FILES"
 
-      - name: Run data cleaning script for each file
+      - name: Run datacleaning.py for each new file
         if: env.FILES != ''
         run: |
           for FILE in $FILES; do
@@ -51,6 +52,7 @@ jobs:
 
       - name: Save cleaned output
         run: |
+        # saves and pushes cleaned *_CLEAN.csv files to the repository
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add *_CLEAN.csv
