@@ -258,7 +258,7 @@ elif page == "Impact & Progress Summary":
     col1.metric("Total Grant Amount Awarded", f"${total_grants:,.2f}")
     col2.metric("Total Overspent Amount", f"${overspent:,.2f}")
 
-    col3, col4 = st.columns(2)
+    col3, col4, col5 = st.columns(3)
     col3.metric("Total Approved Grants", len(approved_grants))
     col4.metric("Unique Patients Served", total_patients)
     col5.metric("Returning Patients Supported", num_returning_patients)
