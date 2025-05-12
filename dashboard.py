@@ -133,7 +133,7 @@ elif page == "Support Breakdown by Demographics":
             initial_view_state=pdk.ViewState(
                 latitude=map_data['lat'].mean(),
                 longitude=map_data['lng'].mean(),
-                zoom=10,
+                zoom=7,  #trying 7, 10 was way too close
             ),
             layers=[
                 pdk.Layer(
