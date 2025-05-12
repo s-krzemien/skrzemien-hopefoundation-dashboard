@@ -232,7 +232,7 @@ def add_age_category_column(age_column):
     def categorize_age(age):
         if pd.isna(age):
             return "NA"
-        if age <0
+        if age < 0:
             return "NA" # one entry said someone was -39 ... we could assume they meant 1964 or 2024 but safest bet to just drop. 
         elif age <= 19:
             return "Child"
