@@ -583,7 +583,7 @@ def clean_payment_method(method):
         return 'Other'
 
 
-#cleanign payable to 
+#cleaning payable to 
 def clean_payable_to(name):
     if pd.isna(name) or str(name).strip().lower() in ['na', 'missing', '?', '']:
         return 'NA'
