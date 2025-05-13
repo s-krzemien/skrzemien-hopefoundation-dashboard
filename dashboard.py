@@ -275,10 +275,10 @@ elif page == "Grant Utilization Overview":
     ).get_figure()
     st.pyplot(fig)
 
-        assistance_support= stdf.groupby("assistance_type")["amount"].sum()
-        st.write(assistance_support)
-        st.bar_chart(assistance_support)
-        st.subheader("Support by Assistance Type")
+    assistance_support= stdf.groupby("assistance_type")["amount"].sum()
+    st.write(assistance_support)
+    st.bar_chart(assistance_support)
+    st.subheader("Support by Assistance Type")
 
 
  # Impact & Progress Summary 
